@@ -197,6 +197,9 @@ public class CodeGenerator extends SmalltalkBaseVisitor<Code> {
 	    if (str.equals("true")){
 	        return Code.of(TRUE);
         }
+        if (str.equals("false")){
+	    	return Code.of(FALSE);
+		}
         if (ctx.NUMBER() != null){
 	        int i = Integer.parseInt(ctx.getText());
 	        return Code.of(PUSH_INT).join(Utils.intToBytes(i));
