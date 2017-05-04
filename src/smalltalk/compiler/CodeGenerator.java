@@ -62,7 +62,6 @@ public class CodeGenerator extends SmalltalkBaseVisitor<Code> {
 	@Override
 	public Code visitClassDef(SmalltalkParser.ClassDefContext ctx) {
 		currentClassScope = ctx.scope;
-		System.out.println(currentClassScope.getName());
 		pushScope(ctx.scope);
 		Code code = visitChildren(ctx);
 		popScope();
@@ -110,7 +109,6 @@ public class CodeGenerator extends SmalltalkBaseVisitor<Code> {
         nextResult.add(POP);
         nextResult.add(SELF);
         nextResult.add(RETURN);
-        //aggregate = aggregateResult(aggregate, nextResult);
         aggregate.join(nextResult);
         stCompiledBlock.bytecode = aggregate.bytes();
         return aggregate;
@@ -121,7 +119,6 @@ public class CodeGenerator extends SmalltalkBaseVisitor<Code> {
 	    currentScope = ctx.scope;
         Code aggregate = visitChildren(ctx);
         currentScope = ctx.scope;
-        System.out.println(currentScope.getName() + ctx.getText());
         STCompiledBlock stCompiledBlock = new STCompiledBlock((STClass) currentClassScope, (STBlock) currentScope);
         Code nextResult = new Code();
         nextResult.add(BLOCK_RETURN);
@@ -132,12 +129,10 @@ public class CodeGenerator extends SmalltalkBaseVisitor<Code> {
         while (!(s instanceof STMethod)){
             s = s.getEnclosingScope();
         }
-        System.out.println((s.getName() +" $ _ $ " + ((STBlock)s).compiledBlock.blocks) + stCompiledBlock.qualifiedName);
         ((STBlock)s).compiledBlock.blocks[((STBlock) currentScope).index] = stCompiledBlock;
         Code c = Code.of(BLOCK).join(Utils.shortToBytes(((STBlock) currentScope).index));
         currentScope = currentScope.getEnclosingScope();
         return c;
-        //return Code.of(BLOCK).join(Utils.shortToBytes(((STBlock) currentScope).index));
 	}
 
     @Override public Code visitBlockArgs(SmalltalkParser.BlockArgsContext ctx) {
@@ -145,7 +140,6 @@ public class CodeGenerator extends SmalltalkBaseVisitor<Code> {
         if (currentScope instanceof STBlock)
             for (int i = 1; i < c; i++)
                 ((STBlock)currentScope).args.add(ctx.getChild(i).getText());
-        //System.out.println(((STBlock)currentScope).getName()+"yyyyyy"+((STBlock)currentScope).nargs()+"xxxxx");
         return visitChildren(ctx);
 	}
 
@@ -249,7 +243,6 @@ public class CodeGenerator extends SmalltalkBaseVisitor<Code> {
 
     @Override public Code visitUnaryIsPrimary(SmalltalkParser.UnaryIsPrimaryContext ctx) {
         STBlock s = (STBlock)currentScope;
-        System.out.println(s.args.toString());
 	    if (ctx.primary().id() != null) {
             String str = ctx.getText();
             Symbol sym = s.resolve(str);
@@ -265,7 +258,6 @@ public class CodeGenerator extends SmalltalkBaseVisitor<Code> {
                     return visitChildren(ctx).join(Code.of(PUSH_LOCAL).join(Utils.shortToBytes(s.getRelativeScopeCount(str))).join(Utils.shortToBytes(index)));
                     //return visitChildren(ctx).join(Code.of(PUSH_LOCAL).join(Utils.shortToBytes(0)).join(Utils.shortToBytes(index)));
                 else{
-                    System.out.println("WTF: " + str);
                     return visitChildren(ctx).join(Code.of(PUSH_FIELD).join(Utils.shortToBytes(currentClassScope.getFieldIndex(str))));}
             }
 	    }
@@ -388,10 +380,8 @@ public class CodeGenerator extends SmalltalkBaseVisitor<Code> {
 
 	public void popScope() {
 //		if ( currentScope.getEnclosingScope()!=null ) {
-//			System.out.println("popping from " + currentScope.getScopeName() + " to " + currentScope.getEnclosingScope().getScopeName());
 //		}
 //		else {
-//			System.out.println("popping from " + currentScope.getScopeName() + " to null");
 //		}
 		currentScope = currentScope.getEnclosingScope();
 	}
