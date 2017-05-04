@@ -135,8 +135,8 @@ public class DefineSymbols extends SmalltalkBaseListener {
 		primitiveName = primitiveName.substring(1); // Strip # from #Foo
 		STMethod m =
 			compiler.createPrimitiveMethod((STClass) currentScope, ctx.selector, primitiveName,
-										   methodNode);
-		currentScope.define(m);
+        									   methodNode);
+        currentScope.define(m);
 		compiler.defineArguments(m, ctx.args);
 		methodNode.scope = m;
 		currentMethod = m;
@@ -184,6 +184,14 @@ public class DefineSymbols extends SmalltalkBaseListener {
 	@Override
 	public void exitBlock(SmalltalkParser.BlockContext ctx) {
 		popScope();
+	}
+
+	@Override
+	public void exitLocalVars(SmalltalkParser.LocalVarsContext ctx) {
+		int c = ctx.getChildCount();
+		if (currentScope instanceof STBlock)
+		for (int i = 1; i < c -1; i++)
+			((STBlock)currentScope).locals.add(ctx.getChild(i).getText());
 	}
 
 	public static List<String> getTextValues(List<TerminalNode> nodes) {

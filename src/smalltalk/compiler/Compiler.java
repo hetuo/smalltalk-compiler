@@ -1,7 +1,9 @@
 package smalltalk.compiler;
 
+import org.antlr.symtab.FieldSymbol;
 import org.antlr.symtab.Scope;
 import org.antlr.symtab.VariableSymbol;
+import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -39,6 +41,13 @@ public class Compiler {
 	}
 
 	public STSymbolTable compile(String fileName, String input) {
+	    parseClasses(new ANTLRInputStream(input));
+	    if (fileTree != null){
+	        defSymbols(fileTree);
+	        resolveSymbols(fileTree);
+	        CodeGenerator generator = new CodeGenerator(this);
+	        generator.visit(fileTree);
+        }
 		return symtab;
 	}
 
@@ -74,12 +83,14 @@ public class Compiler {
 
 	public STBlock createBlock(STMethod currentMethod, ParserRuleContext tree) {
 //		System.out.println("create block in "+currentMethod+" "+args);
-		return null;
+		STBlock block = new STBlock(currentMethod, tree);
+		return block;
 	}
 
 	public STMethod createMethod(String selector, ParserRuleContext tree) {
 //		System.out.println("	create method "+selector+" "+args);
-		return null;
+        STMethod method = new STMethod(selector, tree);
+		return method;
 	}
 
 	public STPrimitiveMethod createPrimitiveMethod(STClass currentClass,
@@ -90,19 +101,44 @@ public class Compiler {
 //		System.out.println("	create primitive "+selector+" "+args+"->"+primitiveName);
 		// convert "<classname>_<methodname>" Primitive value
 		// warn if classname!=currentClass
-		return null;
+        STPrimitiveMethod primitiveMethod = new STPrimitiveMethod(selector, tree, primitiveName);
+		return primitiveMethod;
 	}
 
 	public void defineVariables(Scope scope, List<String> names, Function<String,? extends VariableSymbol> getter) {
 	}
 
 	public void defineFields(Scope scope, List<String> names) {
+        if (names == null || names.equals(""))
+            return;
+        for (String str : names){
+            if (scope.getSymbol(str) == null)
+                scope.define(new FieldSymbol(str));
+            else
+                error("redefinition of " + str + " in " + scope.toQualifierString(">>"));
+        }
 	}
 
 	public void defineArguments(Scope scope, List<String> names) {
+        if (names == null || names.equals(""))
+            return;
+	    for (String str : names){
+	        if (scope.getSymbol(str) == null)
+                scope.define(new FieldSymbol(str));
+	        else
+                error("redefinition of " + str + " in " + scope.toQualifierString(">>"));
+        }
 	}
 
 	public void defineLocals(Scope scope, List<String> names) {
+        if (names == null || names.equals(""))
+            return;
+        for (String str : names){
+            if (scope.getSymbol(str) == null)
+                scope.define(new FieldSymbol(str));
+            else
+                error("redefinition of " + str + " in " + scope.toQualifierString(">>"));
+        }
 	}
 
 	// Convenience methods for code gen

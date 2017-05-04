@@ -2,7 +2,11 @@ package smalltalk.compiler.symbols;
 
 import org.antlr.symtab.MethodSymbol;
 import org.antlr.symtab.Scope;
+import org.antlr.symtab.Symbol;
 import org.antlr.v4.runtime.ParserRuleContext;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** A block is an anonymous method defined within a method or another block.
  *  Ala gnu impl., blocks aren't stored en masse inline.
@@ -37,8 +41,9 @@ public class STBlock extends MethodSymbol {
 	 *  It's also used to conjure up the method name; see constructor.
 	 */
 	public final int index;
-
-	public int numNestedBlocks;
+	public List<String> locals = new ArrayList<>();
+	public List<String> args = new ArrayList<>();
+	public int numNestedBlocks = 0;
 
 	public STCompiledBlock compiledBlock;
 
@@ -58,9 +63,9 @@ public class STBlock extends MethodSymbol {
 
 	public boolean isMethod() { return false; }
 
-	public int nargs() { return 0; } // fill in
+	public int nargs() { return args.size(); } // fill in
 
-	public int nlocals() { return 0; } // fill in
+	public int nlocals() { return locals.size(); } // fill in
 
 	/** Given the name of a local variable or argument, return the index from 0.
 	 *  The arguments come first and then the locals. For example,
@@ -69,7 +74,33 @@ public class STBlock extends MethodSymbol {
 	 */
 	public int getLocalIndex(String name) {
 		// fill in
-		return 0;
+
+        int index = 0;
+        if (args.size() != 0){
+            for (int i = 0; i < args.size(); i++)
+                if (args.get(i).equals(name))
+                    return i;
+        }
+        index += args.size();
+        if (locals.size() != 0)
+            for (int i = 0; i < locals.size(); i++)
+                if (locals.get(i).equals(name))
+                    return index + i;
+        Symbol sym = resolve(name);
+        if (sym.getScope() instanceof STBlock){
+            STBlock s = (STBlock) sym.getScope();
+            if (s.args.size() != 0){
+                for (int i = 0; i < s.args.size(); i++)
+                    if (s.args.get(i).equals(name))
+                        return i;
+            }
+            index += s.args.size();
+            if (s.locals.size() != 0)
+                for (int i = 0; i < s.locals.size(); i++)
+                    if (s.locals.get(i).equals(name))
+                        return index + i;
+        }
+		return -1;
 	}
 
 	/** Look for name in current block; keep looking upwards in
@@ -78,6 +109,18 @@ public class STBlock extends MethodSymbol {
 	 */
 	public int getRelativeScopeCount(String name) {
 		// fill in
-		return 0;
+        int count = 0;
+        Scope s = this;
+        do{
+            if (((STBlock)s).locals.contains(name) || ((STBlock)s).args.contains(name))
+                return count;
+            s = s.getEnclosingScope();
+            count++;
+        }while(s instanceof STBlock);
+        /*if (locals.contains(name) || args.contains(name))
+		    return 0;
+        else
+            return 1;*/
+        return count;
 	}
 }

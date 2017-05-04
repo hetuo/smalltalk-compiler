@@ -31,8 +31,13 @@ public class STClass extends ClassSymbol {
 	}
 
 	public int getFieldIndex(String name) {
+	    System.out.println("name:" + name);
 		Symbol sym = resolve(name);
-		return sym!=null && sym.getScope() instanceof STClass ? sym.getInsertionOrderNumber() : -1;
+		int i = 0;
+		System.out.println(sym.toString());
+        if (!((STClass)sym.getScope()).getSuperClassName().equals("Object") && !((STClass)sym.getScope()).getSuperClassName().equals("Collection"))
+            i = ((STClass)sym.getScope()).getSuperClassScope().getNumberOfFields();
+		return sym!=null && sym.getScope() instanceof STClass ? sym.getInsertionOrderNumber() + i : -1;
 	}
 
 	public STMethod resolveMethod(String name) {

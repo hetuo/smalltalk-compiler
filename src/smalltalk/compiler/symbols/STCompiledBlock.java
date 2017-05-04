@@ -140,15 +140,31 @@ public class STCompiledBlock {
 
 	public String getAsString() {
 		ST template = new ST(testStringTemplate);
+		//System.out.println("name: " + name);
 		template.impl.nativeGroup.setListener(templateErrorListener);
 		template.add("name", name);
+		//System.out.println("isClassMethod: " + isClassMethod);
 		template.add("isClassMethod", isClassMethod);
+		//System.out.println("qualifiedName: " + qualifiedName);
 		template.add("qualifiedName", qualifiedName);
+		//System.out.println("nargs: " + nargs);
 		template.add("nargs", nargs);
+		//System.out.println("nlocals: " + nlocals);
 		template.add("nlocals", nlocals);
+		//System.out.println("bytecode: " + bytecode);
 		template.add("bytecode", bytecode);
+		//System.out.println("enclosingClass: " + enclosingClass.getName());
 		template.add("assembly", Bytecode.disassemble(this.name, this.bytecode, enclosingClass.stringTable.toArray(), 0));
+		//System.out.println("nblocks: " + blocks.length);
 		template.add("nblocks", blocks!=null ? blocks.length : 0);
+		if (blocks != null) {
+            System.out.println("hetuo" + blocks.length);
+            System.out.println(blocks.toString());
+            for (STCompiledBlock b : blocks){
+                System.out.println(qualifiedName);
+                System.out.println("zyx:" + b.toString());
+            }
+        }
         template.add("blocks", Utils.map(blocks, STCompiledBlock::toTestString));
 		return template.render();
 	}

@@ -127,10 +127,15 @@ public class Bytecode {
 	}
 
 	public static int disassembleInstruction(StringBuilder buf, String blkName, byte[] bytecode, String[] literals, int ip) {
-		int opcode = bytecode[ip];
+	    int opcode = bytecode[ip];
+	    //System.out.println("opcode is" + opcode);
 		if ( ip>=bytecode.length ) {
 			throw new IllegalArgumentException("ip out of range: "+ip);
 		}
+		/*for (int i = 0; i < bytecode.length; i++){
+		    System.out.println(bytecode[i]);
+        }*/
+
 		Bytecode.Instruction I =
 			Bytecode.instructions[opcode];
 		if ( I==null ) {
@@ -144,6 +149,7 @@ public class Bytecode {
 		else {
 			buf.append(String.format("%04d:  %-15s", ip, instrName));
 		}
+		//System.out.println(ip + ":" + instrName);
 		ip++;
 		if ( I.n==0 ) {
 			buf.append("  ");
@@ -205,8 +211,12 @@ public class Bytecode {
 	}
 
 	public static int getShort(byte[] memory, int index) {
+		//System.out.println("getShort"+memory[index]);
+	    //System.out.println("getShort1" + memory[index + 1]);
 		int b1 = memory[index++]&0xFF; // mask off sign-extended bits
+        //System.out.println("b1" + b1);
 		int b2 = memory[index]&0xFF;
+		//System.out.println("b2" + b2);
 		return b1<<(8*1) | b2;
 	}
 
