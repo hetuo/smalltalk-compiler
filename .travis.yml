@@ -1,4 +1,4 @@
 jdk:
   - oraclejdk8
-  script: mvn clean test
-  language: java
+script: mvn clean test
+language: java
